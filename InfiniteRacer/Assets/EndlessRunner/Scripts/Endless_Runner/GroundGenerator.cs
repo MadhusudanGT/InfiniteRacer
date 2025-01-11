@@ -13,6 +13,8 @@ public class GroundGenerator : MonoBehaviour
     private Camera mainCamera;
 
     private List<PlatformTile> spawnedTiles = new List<PlatformTile>();
+    private MoveDirections currentMoveDirection = MoveDirections.Center;
+    private bool gestureActive = false; // Tracks if a gesture is currently active
 
     private void Awake()
     {
@@ -94,17 +96,27 @@ public class GroundGenerator : MonoBehaviour
 
     private void HandleInput()
     {
-        if (Input.touchCount == 3)
+        if (Input.touchCount > 0)
         {
-            DetectThreeFingerGesture();
-        }
-        else if (Input.touchCount == 4)
-        {
-            DetectFourFingerGesture();
+            gestureActive = true;
+
+            if (Input.touchCount == 3)
+            {
+                DetectThreeFingerGesture();
+            }
+            else if (Input.touchCount == 4)
+            {
+                DetectFourFingerGesture();
+            }
         }
         else
         {
-            EventManager.MoveDirection?.Invoke(MoveDirections.Center);
+            // Reset to center when no fingers are touching the screen
+            if (gestureActive)
+            {
+                gestureActive = false;
+                SetMoveDirection(MoveDirections.Center);
+            }
         }
     }
 
@@ -117,11 +129,11 @@ public class GroundGenerator : MonoBehaviour
 
         if (isLeftTriangle)
         {
-            EventManager.MoveDirection?.Invoke(MoveDirections.Left);
+            SetMoveDirection(MoveDirections.Left);
         }
         else if (isRightTriangle)
         {
-            EventManager.MoveDirection?.Invoke(MoveDirections.Right);
+            SetMoveDirection(MoveDirections.Right);
         }
     }
 
@@ -131,26 +143,39 @@ public class GroundGenerator : MonoBehaviour
 
         if (AreTouchesInSquare(touches))
         {
-            if (gameManager.CurrentState == GameState.Running)
-            {
-                gameManager.CurrentState = GameState.Paused;
-            }
-            else
-            {
-                gameManager.CurrentState = GameState.Running;
-            }
+            ToggleGameState();
+        }
+    }
+
+    private void SetMoveDirection(MoveDirections direction)
+    {
+        if (currentMoveDirection != direction)
+        {
+            currentMoveDirection = direction;
+            EventManager.MoveDirection?.Invoke(direction);
+        }
+    }
+
+    private void ToggleGameState()
+    {
+        if (gameManager.CurrentState == GameState.Running)
+        {
+            gameManager.CurrentState = GameState.Paused;
+        }
+        else
+        {
+            gameManager.CurrentState = GameState.Running;
         }
     }
 
     private bool AreTouchesInTriangle(Touch[] touches, bool isLeftTriangle)
     {
-        if (touches.Length != 3) return false;
+        if (touches.Length < 3) return false;
 
         var sortedTouches = touches.OrderBy(t => t.position.x).ToArray();
 
         if (isLeftTriangle)
         {
-            // Left Triangle: 90-degree angle on the left side
             float baseX = Mathf.Abs(sortedTouches[0].position.x - sortedTouches[1].position.x);
             float heightY = Mathf.Abs(sortedTouches[0].position.y - sortedTouches[2].position.y);
 
@@ -158,7 +183,6 @@ public class GroundGenerator : MonoBehaviour
         }
         else
         {
-            // Right Triangle: 90-degree angle on the right side
             float baseX = Mathf.Abs(sortedTouches[2].position.x - sortedTouches[1].position.x);
             float heightY = Mathf.Abs(sortedTouches[2].position.y - sortedTouches[0].position.y);
 
