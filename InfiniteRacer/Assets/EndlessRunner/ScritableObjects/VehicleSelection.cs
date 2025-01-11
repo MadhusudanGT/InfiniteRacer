@@ -16,6 +16,7 @@ public class VehicleSelectionData
     public string vehicleName;
     public float vehicleSpeed;
     public bool IsSelected;
+    public Sprite vehicleSprite;
 
     public void IsSelectedVehicle(VehicleType vehType)
     {

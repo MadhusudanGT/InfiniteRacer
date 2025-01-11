@@ -8,7 +8,7 @@ public class SelectionVehiclePanel : MonoBehaviour
     [SerializeField] private Color enabledPanel, disabledPanel;
     [SerializeField] private TMP_Text vehicleName;
     [SerializeField] private TMP_Text vehicleFirstName;
-    [SerializeField] private Image _selectedPanel;
+    [SerializeField] private Image _selectedPanel,_vehicleImg;
     [SerializeField] private Button btnClick;
     private void OnEnable()
     {
@@ -42,6 +42,7 @@ public class SelectionVehiclePanel : MonoBehaviour
 
     public void InitData(VehicleSelectionData vehicleSelectionData)
     {
+        _vehicleImg.sprite = vehicleSelectionData.vehicleSprite;
         vehicleType = vehicleSelectionData.vehicleType;
         vehicleName.SetText(vehicleSelectionData.vehicleName);
         vehicleFirstName.SetText(vehicleSelectionData.vehicleName.Substring(0, 1));
