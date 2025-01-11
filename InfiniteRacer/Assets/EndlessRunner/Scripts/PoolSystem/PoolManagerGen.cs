@@ -58,5 +58,6 @@ public enum PoolManagerKeys
     NONE,
     PLATFORM,
     COINS,
-    ABSTRACLES
+    ABSTRACLES,
+    SELECTION_PANEL
 }

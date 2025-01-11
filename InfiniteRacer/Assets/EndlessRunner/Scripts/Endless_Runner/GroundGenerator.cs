@@ -1,85 +1,189 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.EditorTools;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GroundGenerator : MonoBehaviour
 {
+    public static GroundGenerator Instance;
+
     [SerializeField] private EndlessTilesData tilesData;
+
+    private GameManager gameManager;
     private PoolManagerGen poolManager;
     private Camera mainCamera;
-    List<PlatformTile> spawnedTiles = new List<PlatformTile>();
 
-    [HideInInspector]
-    public bool gameOver = false;
-    static bool gameStarted = false;
-    float score = 0;
-
-    public static GroundGenerator instance;
+    private List<PlatformTile> spawnedTiles = new List<PlatformTile>();
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        instance = this;
-        ManagerRegistry.Register<GroundGenerator>(this);
+        Instance = this;
+        ManagerRegistry.Register(this);
         mainCamera = Camera.main;
     }
 
-    void Start()
+    private void Start()
+    {
+        InitializeComponents();
+        PreSpawnTiles();
+    }
+
+    private void Update()
+    {
+        if (gameManager == null) return;
+
+        if (gameManager.CurrentState == GameState.Running)
+        {
+            if (spawnedTiles.Count > 0)
+            {
+                MoveTiles();
+                RecycleTiles();
+            }
+        }
+
+        HandleInput();
+    }
+
+    private void InitializeComponents()
     {
         poolManager = ManagerRegistry.Get<PoolManagerGen>();
+        gameManager = ManagerRegistry.Get<GameManager>();
+    }
+
+    private void PreSpawnTiles()
+    {
         Vector3 spawnPosition = tilesData.spawnPoint;
 
         for (int i = 0; i < tilesData.tilesToPreSpawn; i++)
         {
             spawnPosition -= tilesData.tilePrefab.startPoint.localPosition;
             var platform = poolManager.GetObject<PlatformTile>(PoolManagerKeys.PLATFORM);
+
             platform.transform.position = spawnPosition;
             spawnPosition = platform.endPoint.position;
+
             platform.transform.SetParent(transform);
             spawnedTiles.Add(platform);
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void MoveTiles()
     {
-        if (!gameOver && gameStarted)
-        {
-            transform.Translate(-spawnedTiles[0].transform.forward * Time.deltaTime * (tilesData.movingSpeed + (score / 500)), Space.World);
-            score += Time.deltaTime * tilesData.movingSpeed;
-        }
+        float moveSpeed = tilesData.movingSpeed * Time.deltaTime;
+        transform.Translate(-spawnedTiles[0].transform.forward * moveSpeed, Space.World);
+    }
 
+    private void RecycleTiles()
+    {
         if (mainCamera.WorldToViewportPoint(spawnedTiles[0].endPoint.position).z < 0)
         {
-            PlatformTile tileTmp = spawnedTiles[0];
+            PlatformTile recycledTile = spawnedTiles[0];
             spawnedTiles.RemoveAt(0);
-            tileTmp.transform.position = spawnedTiles[spawnedTiles.Count - 1].endPoint.position - tileTmp.startPoint.localPosition;
-            spawnedTiles.Add(tileTmp);
-        }
 
-        if (gameOver || !gameStarted)
+            Vector3 newTilePosition = spawnedTiles[^1].endPoint.position - recycledTile.startPoint.localPosition;
+            recycledTile.transform.position = newTilePosition;
+
+            spawnedTiles.Add(recycledTile);
+        }
+    }
+
+    private void HandleInput()
+    {
+        if (Input.touchCount == 3)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            DetectThreeFingerGesture();
+        }
+        else if (Input.touchCount == 4)
+        {
+            DetectFourFingerGesture();
+        }
+        else
+        {
+            EventManager.MoveDirection?.Invoke(MoveDirections.Center);
+        }
+    }
+
+    private void DetectThreeFingerGesture()
+    {
+        var touches = Input.touches;
+
+        bool isLeftTriangle = AreTouchesInTriangle(touches, true);
+        bool isRightTriangle = AreTouchesInTriangle(touches, false);
+
+        if (isLeftTriangle)
+        {
+            EventManager.MoveDirection?.Invoke(MoveDirections.Left);
+        }
+        else if (isRightTriangle)
+        {
+            EventManager.MoveDirection?.Invoke(MoveDirections.Right);
+        }
+    }
+
+    private void DetectFourFingerGesture()
+    {
+        var touches = Input.touches;
+
+        if (AreTouchesInSquare(touches))
+        {
+            if (gameManager.CurrentState == GameState.Running)
             {
-                if (gameOver)
-                {
-                    //Restart current scene
-                    Scene scene = SceneManager.GetActiveScene();
-                    SceneManager.LoadScene(scene.name);
-                }
-                else
-                {
-                    //Start the game
-                    gameStarted = true;
-                }
+                gameManager.CurrentState = GameState.Paused;
+            }
+            else
+            {
+                gameManager.CurrentState = GameState.Running;
             }
         }
     }
+
+    private bool AreTouchesInTriangle(Touch[] touches, bool isLeftTriangle)
+    {
+        if (touches.Length != 3) return false;
+
+        var sortedTouches = touches.OrderBy(t => t.position.x).ToArray();
+
+        if (isLeftTriangle)
+        {
+            // Left Triangle: 90-degree angle on the left side
+            float baseX = Mathf.Abs(sortedTouches[0].position.x - sortedTouches[1].position.x);
+            float heightY = Mathf.Abs(sortedTouches[0].position.y - sortedTouches[2].position.y);
+
+            return baseX < Screen.width * 0.1f && heightY < Screen.height * 0.2f;
+        }
+        else
+        {
+            // Right Triangle: 90-degree angle on the right side
+            float baseX = Mathf.Abs(sortedTouches[2].position.x - sortedTouches[1].position.x);
+            float heightY = Mathf.Abs(sortedTouches[2].position.y - sortedTouches[0].position.y);
+
+            return baseX < Screen.width * 0.1f && heightY < Screen.height * 0.2f;
+        }
+    }
+
+    private bool AreTouchesInSquare(Touch[] touches)
+    {
+        if (touches.Length != 4) return false;
+
+        float[] xPositions = touches.Select(t => t.position.x).ToArray();
+        float[] yPositions = touches.Select(t => t.position.y).ToArray();
+
+        float xRange = xPositions.Max() - xPositions.Min();
+        float yRange = yPositions.Max() - yPositions.Min();
+
+        return Mathf.Abs(xRange - yRange) < Screen.width * 0.1f; // Adjust for screen size
+    }
+}
+
+public enum MoveDirections
+{
+    None,
+    Right,
+    Left,
+    Center
 }
