@@ -10,10 +10,14 @@ public class VehicleSelectionScreen : MonoBehaviour
     [SerializeField] private VehicleType defaultVehicleType = VehicleType.CAR;
     [SerializeField] private List<SelectionVehiclePanel> listOfSelectionVehiclePanel;
     [SerializeField] private List<SpawnVehicle> _spawnVehicle;
+    [SerializeField] private GameObject selectionScreen;
+    [SerializeField] ParticleSystem particleEffect;
+
     private PoolManagerGen poolManager;
 
     private void OnEnable()
     {
+        particleEffect.Stop();
         EventManager.SelectedVehiclePanel += SelectedPanel;
     }
 
@@ -24,6 +28,7 @@ public class VehicleSelectionScreen : MonoBehaviour
 
     void SelectedPanel(VehicleType vehType)
     {
+        selectionScreen.SetActive(false);
         foreach (var vehicleData in vehicleSelectionData._vehiclesData)
         {
             vehicleData.IsSelectedVehicle(vehType);
@@ -35,8 +40,19 @@ public class VehicleSelectionScreen : MonoBehaviour
             {
                 bool isActive = spawnVehicle.vehicleType == vehType;
                 spawnVehicle.spawnedVehicle.transform.gameObject.SetActive(isActive);
+                if (isActive)
+                {
+                    particleEffect?.Play();
+                    StopEffect();
+                }
             }
         }
+    }
+
+    async Task StopEffect()
+    {
+        await Task.Delay(1000);
+        particleEffect?.Stop();
     }
 
     private void Start()
@@ -132,12 +148,14 @@ public class VehicleSelectionScreen : MonoBehaviour
     void SpawnVehicles(VehicleSelectionData vehicleDatas)
     {
         SpawnVehicle spawnData = _spawnVehicle.Find(item => item.vehicleType == vehicleDatas.vehicleType);
+        Debug.Log(vehicleDatas.spawnPos);
         Transform vehicle = Instantiate(spawnData.vehiclePrefab, vehicleDatas.spawnPos, Quaternion.identity) as Transform;
         vehicle.SetParent(parent);
         vehicle.localScale = Vector3.one;
         Vehicle veh = vehicle.GetComponent<Vehicle>();
         if (veh != null)
         {
+            veh.InitVehicle(vehicleDatas.spawnPos);
             spawnData.spawnedVehicle = veh;
             if (vehicleDatas.IsSelected)
             {

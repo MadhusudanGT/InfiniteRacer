@@ -14,7 +14,7 @@ public class GroundGenerator : MonoBehaviour
 
     private List<PlatformTile> spawnedTiles = new List<PlatformTile>();
     private MoveDirections currentMoveDirection = MoveDirections.Center;
-    private bool gestureActive = false; // Tracks if a gesture is currently active
+    private bool gestureActive = false;
 
     private void Awake()
     {
@@ -47,8 +47,6 @@ public class GroundGenerator : MonoBehaviour
                 RecycleTiles();
             }
         }
-
-        HandleInput();
     }
 
     private void InitializeComponents()
@@ -92,115 +90,6 @@ public class GroundGenerator : MonoBehaviour
 
             spawnedTiles.Add(recycledTile);
         }
-    }
-
-    private void HandleInput()
-    {
-        if (Input.touchCount > 0)
-        {
-            gestureActive = true;
-
-            if (Input.touchCount == 3)
-            {
-                DetectThreeFingerGesture();
-            }
-            else if (Input.touchCount == 4)
-            {
-                DetectFourFingerGesture();
-            }
-        }
-        else
-        {
-            // Reset to center when no fingers are touching the screen
-            if (gestureActive)
-            {
-                gestureActive = false;
-                SetMoveDirection(MoveDirections.Center);
-            }
-        }
-    }
-
-    private void DetectThreeFingerGesture()
-    {
-        var touches = Input.touches;
-
-        bool isLeftTriangle = AreTouchesInTriangle(touches, true);
-        bool isRightTriangle = AreTouchesInTriangle(touches, false);
-
-        if (isLeftTriangle)
-        {
-            SetMoveDirection(MoveDirections.Left);
-        }
-        else if (isRightTriangle)
-        {
-            SetMoveDirection(MoveDirections.Right);
-        }
-    }
-
-    private void DetectFourFingerGesture()
-    {
-        var touches = Input.touches;
-
-        if (AreTouchesInSquare(touches))
-        {
-            ToggleGameState();
-        }
-    }
-
-    private void SetMoveDirection(MoveDirections direction)
-    {
-        if (currentMoveDirection != direction)
-        {
-            currentMoveDirection = direction;
-            EventManager.MoveDirection?.Invoke(direction);
-        }
-    }
-
-    private void ToggleGameState()
-    {
-        if (gameManager.CurrentState == GameState.Running)
-        {
-            gameManager.CurrentState = GameState.Paused;
-        }
-        else
-        {
-            gameManager.CurrentState = GameState.Running;
-        }
-    }
-
-    private bool AreTouchesInTriangle(Touch[] touches, bool isLeftTriangle)
-    {
-        if (touches.Length < 3) return false;
-
-        var sortedTouches = touches.OrderBy(t => t.position.x).ToArray();
-
-        if (isLeftTriangle)
-        {
-            float baseX = Mathf.Abs(sortedTouches[0].position.x - sortedTouches[1].position.x);
-            float heightY = Mathf.Abs(sortedTouches[0].position.y - sortedTouches[2].position.y);
-
-            return baseX < Screen.width * 0.1f && heightY < Screen.height * 0.2f;
-        }
-        else
-        {
-            float baseX = Mathf.Abs(sortedTouches[2].position.x - sortedTouches[1].position.x);
-            float heightY = Mathf.Abs(sortedTouches[2].position.y - sortedTouches[0].position.y);
-
-            return baseX < Screen.width * 0.1f && heightY < Screen.height * 0.2f;
-        }
-    }
-
-    private bool AreTouchesInSquare(Touch[] touches)
-    {
-        if (touches.Length != 4) return false;
-
-        float[] xPositions = touches.Select(t => t.position.x).ToArray();
-        float[] yPositions = touches.Select(t => t.position.y).ToArray();
-
-        float xRange = xPositions.Max() - xPositions.Min();
-        float yRange = yPositions.Max() - yPositions.Min();
-
-        return Mathf.Abs(xRange - yRange) < Screen.width * 0.1f; // Adjust for screen size
     }
 }
 

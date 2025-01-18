@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8717463124339110820
 Transform:
   m_ObjectHideFlags: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vehicleType: 2
-  laneOffset: 0.35
+  _spawnPos: {x: 0, y: 0, z: 0}
 --- !u!1001 &4383348087995582047
 PrefabInstance:
   m_ObjectHideFlags: 0

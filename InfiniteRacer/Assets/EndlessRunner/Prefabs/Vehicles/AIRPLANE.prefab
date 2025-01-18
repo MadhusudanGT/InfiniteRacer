@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vehicleType: 1
-  laneOffset: 0.35
+  _spawnPos: {x: 0, y: 0, z: 0}
 --- !u!1001 &8257326159505365886
 PrefabInstance:
   m_ObjectHideFlags: 0
