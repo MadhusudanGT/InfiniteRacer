@@ -1,0 +1,22 @@
+{
+    "vehicles": [
+        {
+            "vehicleTypeString": "CAR",
+            "vehiclePrefabPath": "Prefabs/Vehicles/Car",
+            "spawnPos": { "x": 0, "y": -0.032, "z": -17.06 },
+            "vehicleName": "Super Car",
+            "vehicleSpeed": 3,
+            "isSelected": true,
+            "vehicleSpritePath": "Prefabs/Sprites/CarSprite"
+        },
+        {
+            "vehicleTypeString": "AEROPLANE",
+            "vehiclePrefabPath": "Prefabs/Vehicles/AIRPLANE",
+            "spawnPos": { "x": 0, "y": 0.305, "z": -17.06 },
+            "vehicleName": "Aeroplane",
+            "vehicleSpeed": 5,
+            "isSelected": false,
+            "vehicleSpritePath": "Prefabs/Sprites/AeroplaneSprite"
+        }
+    ]
+}
