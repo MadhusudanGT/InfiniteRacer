@@ -10,23 +10,40 @@ public class VehicleSelection : ScriptableObject
 [System.Serializable]
 public class VehicleSelectionData
 {
+    public string vehicleTypeString;
     public VehicleType vehicleType;
-    public Vehicle vehiclePrefab;
+
     public Vector3 spawnPos;
     public string vehicleName;
     public float vehicleSpeed;
-    public bool IsSelected;
+    public bool isSelected;
+    public string vehiclePrefabPath;
+    public string vehicleSpritePath;
+
+    public Vehicle vehiclePrefab;
     public Sprite vehicleSprite;
 
-    public void IsSelectedVehicle(VehicleType vehType)
+    public void LoadResources()
     {
-        if (vehType == this.vehicleType)
+        if (!string.IsNullOrEmpty(vehiclePrefabPath))
         {
-            this.IsSelected = true;
+            vehiclePrefab = Resources.Load<Vehicle>(vehiclePrefabPath);
+        }
+        if (!string.IsNullOrEmpty(vehicleSpritePath))
+        {
+            vehicleSprite = Resources.Load<Sprite>(vehicleSpritePath);
+        }
+    }
+
+    public void UpdateVehicleType()
+    {
+        if (System.Enum.TryParse(vehicleTypeString, true, out VehicleType parsedType))
+        {
+            vehicleType = parsedType;
         }
         else
         {
-            this.IsSelected = false;
+            Debug.LogWarning($"Unknown vehicleType: {vehicleType}");
         }
     }
 }
@@ -34,6 +51,6 @@ public class VehicleSelectionData
 public enum VehicleType
 {
     NONE,
+    CAR,
     AEROPLANE,
-    CAR
 }

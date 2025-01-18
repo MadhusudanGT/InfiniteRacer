@@ -2614,6 +2614,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1472128915}
   - component: {fileID: 1472128916}
+  - component: {fileID: 1472128917}
   m_Layer: 0
   m_Name: VehicleSpawnPosition
   m_TagString: Untagged
@@ -2648,24 +2649,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c7b459094eb8964aa6523b4f64db3d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vehicleSelectionData: {fileID: 11400000, guid: b8741214e5fa06c448989d128cfa38f2, type: 2}
+  vehicleDataLoader: {fileID: 1472128917}
   parent: {fileID: 484618960}
   vehicleSelectionPanelParent: {fileID: 346941343}
-  defaultVehicleType: 2
+  defaultVehicleType: 1
   listOfSelectionVehiclePanel:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   _spawnVehicle:
-  - vehicleType: 1
+  - vehicleType: 2
     vehiclePrefab: {fileID: 7543728508739120097, guid: c908b27198043ba47ade46c3f9c9cf59, type: 3}
     spawnedVehicle: {fileID: 8408083014526259441, guid: c908b27198043ba47ade46c3f9c9cf59, type: 3}
-  - vehicleType: 2
+  - vehicleType: 1
     vehiclePrefab: {fileID: 8717463124339110820, guid: 026ef1cf6762d3444aaf87fd5a997a63, type: 3}
     spawnedVehicle: {fileID: 6228106392632903036, guid: 026ef1cf6762d3444aaf87fd5a997a63, type: 3}
   selectionScreen: {fileID: 1891081949}
   particleEffect: {fileID: 1275701904}
+--- !u!114 &1472128917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472128914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9eaa32661091ab458efecb4236a68ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vehicleDataList: []
 --- !u!1 &1572727764
 GameObject:
   m_ObjectHideFlags: 0

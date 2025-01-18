@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class VehicleSelectionScreen : MonoBehaviour
 {
-    [SerializeField] private VehicleSelection vehicleSelectionData;
+    [SerializeField] private VehicleDataLoader vehicleDataLoader;
     [SerializeField] private Transform parent, vehicleSelectionPanelParent;
     [SerializeField] private VehicleType defaultVehicleType = VehicleType.CAR;
     [SerializeField] private List<SelectionVehiclePanel> listOfSelectionVehiclePanel;
@@ -29,9 +29,9 @@ public class VehicleSelectionScreen : MonoBehaviour
     void SelectedPanel(VehicleType vehType)
     {
         selectionScreen.SetActive(false);
-        foreach (var vehicleData in vehicleSelectionData._vehiclesData)
+        foreach (VehicleSelectionData vehicleData in vehicleDataLoader?.vehicleDataList)
         {
-            vehicleData.IsSelectedVehicle(vehType);
+            vehicleData.isSelected = (vehType == vehicleData.vehicleType);
         }
 
         foreach (var spawnVehicle in _spawnVehicle)
@@ -64,7 +64,7 @@ public class VehicleSelectionScreen : MonoBehaviour
     async Task SpawnThePanel()
     {
         await Task.Delay(1000);
-        SpawnIt(vehicleSelectionData._vehiclesData);
+        SpawnIt(vehicleDataLoader.vehicleDataList);
     }
 
     public void SpawnIt(List<VehicleSelectionData> vehicalPanel)
@@ -148,16 +148,15 @@ public class VehicleSelectionScreen : MonoBehaviour
     void SpawnVehicles(VehicleSelectionData vehicleDatas)
     {
         SpawnVehicle spawnData = _spawnVehicle.Find(item => item.vehicleType == vehicleDatas.vehicleType);
-        Debug.Log(vehicleDatas.spawnPos);
-        Transform vehicle = Instantiate(spawnData.vehiclePrefab, vehicleDatas.spawnPos, Quaternion.identity) as Transform;
+        Transform vehicle = Instantiate(vehicleDatas.vehiclePrefab.transform, vehicleDatas.spawnPos, Quaternion.identity) as Transform;
         vehicle.SetParent(parent);
         vehicle.localScale = Vector3.one;
-        Vehicle veh = vehicle.GetComponent<Vehicle>();
+        Vehicle veh = vehicle?.GetComponent<Vehicle>();
         if (veh != null)
         {
             veh.InitVehicle(vehicleDatas.spawnPos);
             spawnData.spawnedVehicle = veh;
-            if (vehicleDatas.IsSelected)
+            if (vehicleDatas.isSelected)
             {
                 vehicle.gameObject.SetActive(true);
             }

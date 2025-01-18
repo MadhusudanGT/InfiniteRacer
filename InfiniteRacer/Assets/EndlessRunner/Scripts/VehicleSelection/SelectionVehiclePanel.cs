@@ -46,7 +46,7 @@ public class SelectionVehiclePanel : MonoBehaviour
         vehicleType = vehicleSelectionData.vehicleType;
         vehicleName.SetText(vehicleSelectionData.vehicleName);
         vehicleFirstName.SetText(vehicleSelectionData.vehicleName.Substring(0, 1));
-        if (vehicleSelectionData.IsSelected)
+        if (vehicleSelectionData.isSelected)
         {
             SelectedVehicle();
         }

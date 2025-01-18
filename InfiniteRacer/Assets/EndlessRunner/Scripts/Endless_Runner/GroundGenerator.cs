@@ -13,8 +13,6 @@ public class GroundGenerator : MonoBehaviour
     private Camera mainCamera;
 
     private List<PlatformTile> spawnedTiles = new List<PlatformTile>();
-    private MoveDirections currentMoveDirection = MoveDirections.Center;
-    private bool gestureActive = false;
 
     private void Awake()
     {
